@@ -1,0 +1,348 @@
+{
+ "integration": {
+  "ai": {
+   "en": "Artificial intelligence",
+   "it": "Intelligenza artificiale"
+  },
+  "analytics": {
+   "en": "Analytics",
+   "it": "Analisi"
+  },
+  "cloud": {
+   "en": "Cloud",
+   "it": "Cloud"
+  },
+  "conferencing": {
+   "en": "Video conferencing & webinars",
+   "it": "Videoconferenza e webinar"
+  },
+  "crm": {
+   "en": "CRM",
+   "it": "CRM"
+  },
+  "database": {
+   "en": "Databases",
+   "it": "Database"
+  },
+  "developer": {
+   "en": "Developer tools",
+   "it": "Sviluppo"
+  },
+  "documents": {
+   "en": "Documents",
+   "it": "Documenti"
+  },
+  "ecommerce": {
+   "en": "E-commerce",
+   "it": "E-commerce"
+  },
+  "engineering": {
+   "en": "Engineering & lab",
+   "it": "Ingegneria e laboratorio"
+  },
+  "events": {
+   "en": "Events and webhooks",
+   "it": "Eventi e webhook"
+  },
+  "finance": {
+   "en": "Finance & accounting",
+   "it": "Finanza e contabilità"
+  },
+  "google": {
+   "en": "Google",
+   "it": "Google"
+  },
+  "healthcare": {
+   "en": "Healthcare",
+   "it": "Sanità"
+  },
+  "industrial": {
+   "en": "Industrial",
+   "it": "Industria"
+  },
+  "maps": {
+   "en": "Maps & location",
+   "it": "Mappe e luoghi"
+  },
+  "marketing": {
+   "en": "Marketing",
+   "it": "Marketing"
+  },
+  "messaging": {
+   "en": "Messaging",
+   "it": "Messaggistica"
+  },
+  "microsoft": {
+   "en": "Microsoft",
+   "it": "Microsoft"
+  },
+  "monitoring": {
+   "en": "Monitoring",
+   "it": "Monitoraggio"
+  },
+  "other": {
+   "en": "Other",
+   "it": "Altro"
+  },
+  "payments": {
+   "en": "Payments",
+   "it": "Pagamenti"
+  },
+  "productivity": {
+   "en": "Productivity",
+   "it": "Produttività"
+  },
+  "social": {
+   "en": "Social",
+   "it": "Social"
+  },
+  "storage": {
+   "en": "Storage",
+   "it": "Archiviazione"
+  },
+  "telephony": {
+   "en": "Telephony & VoIP",
+   "it": "Telefonia e VoIP"
+  }
+ },
+ "library": {
+  "charts": {
+   "en": "Charts",
+   "it": "Grafici"
+  },
+  "data": {
+   "en": "Data and dates",
+   "it": "Dati e date"
+  },
+  "documents": {
+   "en": "Documents",
+   "it": "Documenti"
+  },
+  "files": {
+   "en": "Files and formats",
+   "it": "File e formati"
+  },
+  "flow": {
+   "en": "Flow and logic",
+   "it": "Flusso e logica"
+  },
+  "industry": {
+   "en": "Industry standards",
+   "it": "Standard di settore"
+  },
+  "math": {
+   "en": "Math",
+   "it": "Matematica"
+  },
+  "media": {
+   "en": "Media and communication",
+   "it": "Media e comunicazione"
+  },
+  "network": {
+   "en": "Networking",
+   "it": "Rete"
+  },
+  "other": {
+   "en": "Other",
+   "it": "Altro"
+  },
+  "platform": {
+   "en": "OpenBack services",
+   "it": "Servizi OpenBack"
+  },
+  "science": {
+   "en": "Data analysis and science",
+   "it": "Analisi dati e calcolo scientifico"
+  },
+  "security": {
+   "en": "Security",
+   "it": "Sicurezza"
+  },
+  "text": {
+   "en": "Text and encodings",
+   "it": "Testo e codifiche"
+  }
+ },
+ "template": {
+  "artificial-intelligence": {
+   "en": "Artificial intelligence",
+   "icon": "sparkles",
+   "it": "Intelligenza artificiale"
+  },
+  "audio-video": {
+   "en": "Audio and video",
+   "icon": "film",
+   "it": "Audio e video"
+  },
+  "automation": {
+   "en": "Automation and scheduling",
+   "icon": "timer",
+   "it": "Automazione e pianificazione"
+  },
+  "calculations": {
+   "en": "Calculations",
+   "icon": "calculator",
+   "it": "Calcoli"
+  },
+  "charts": {
+   "en": "Charts",
+   "icon": "chart-line",
+   "it": "Grafici"
+  },
+  "cloud": {
+   "en": "Cloud",
+   "icon": "cloud",
+   "it": "Cloud"
+  },
+  "crm-sales": {
+   "en": "CRM and sales",
+   "icon": "users",
+   "it": "CRM e vendite"
+  },
+  "custom-code": {
+   "en": "Custom code",
+   "icon": "code",
+   "it": "Codice personalizzato"
+  },
+  "data-analysis": {
+   "en": "Data analysis",
+   "icon": "flask",
+   "it": "Analisi dati"
+  },
+  "data-transformation": {
+   "en": "Data transformation",
+   "icon": "shuffle",
+   "it": "Trasformazione dati"
+  },
+  "databases": {
+   "en": "Databases",
+   "icon": "database",
+   "it": "Database"
+  },
+  "devops": {
+   "en": "Development and DevOps",
+   "icon": "git-branch",
+   "it": "Sviluppo e DevOps"
+  },
+  "documents": {
+   "en": "Documents and reports",
+   "icon": "file-type",
+   "it": "Documenti e report"
+  },
+  "ecommerce": {
+   "en": "E-commerce",
+   "icon": "shopping-cart",
+   "it": "E-commerce"
+  },
+  "email-marketing": {
+   "en": "Email marketing",
+   "icon": "mail",
+   "it": "Email marketing"
+  },
+  "file-storage": {
+   "en": "File storage",
+   "icon": "hard-drive",
+   "it": "Archiviazione file"
+  },
+  "files-formats": {
+   "en": "Files and formats",
+   "icon": "file-text",
+   "it": "File e formati"
+  },
+  "fundamentals": {
+   "en": "Fundamentals",
+   "icon": "blocks",
+   "it": "Fondamenti"
+  },
+  "healthcare": {
+   "en": "Healthcare",
+   "icon": "heart-pulse",
+   "it": "Sanità"
+  },
+  "http-apis": {
+   "en": "HTTP and APIs",
+   "icon": "globe",
+   "it": "HTTP e API"
+  },
+  "industrial-iot": {
+   "en": "Industrial and IoT",
+   "icon": "cpu",
+   "it": "Industria e IoT"
+  },
+  "industry-formats": {
+   "en": "Industry formats",
+   "icon": "factory",
+   "it": "Formati di settore"
+  },
+  "invoicing": {
+   "en": "Invoicing and accounting",
+   "icon": "receipt",
+   "it": "Fatturazione e contabilità"
+  },
+  "lab-engineering": {
+   "en": "Lab and engineering",
+   "icon": "microscope",
+   "it": "Laboratorio e ingegneria"
+  },
+  "maps": {
+   "en": "Maps and geolocation",
+   "icon": "map",
+   "it": "Mappe e geolocalizzazione"
+  },
+  "monitoring": {
+   "en": "Monitoring",
+   "icon": "activity",
+   "it": "Monitoraggio"
+  },
+  "notifications": {
+   "en": "Notifications and messaging",
+   "icon": "message-square",
+   "it": "Notifiche e messaggistica"
+  },
+  "payments": {
+   "en": "Payments",
+   "icon": "credit-card",
+   "it": "Pagamenti"
+  },
+  "platform": {
+   "en": "OpenBack platform",
+   "icon": "server",
+   "it": "Piattaforma OpenBack"
+  },
+  "productivity": {
+   "en": "Productivity and projects",
+   "icon": "kanban",
+   "it": "Produttività e progetti"
+  },
+  "security": {
+   "en": "Security and cryptography",
+   "icon": "shield",
+   "it": "Sicurezza e crittografia"
+  },
+  "social-media": {
+   "en": "Social media",
+   "icon": "share-2",
+   "it": "Social media"
+  },
+  "telephony": {
+   "en": "Telephony",
+   "icon": "phone",
+   "it": "Telefonia"
+  },
+  "text-processing": {
+   "en": "Text processing",
+   "icon": "type",
+   "it": "Elaborazione testo"
+  },
+  "video-meetings": {
+   "en": "Video meetings",
+   "icon": "video",
+   "it": "Videoconferenze"
+  },
+  "webhooks": {
+   "en": "Webhooks",
+   "icon": "webhook",
+   "it": "Webhook"
+  }
+ }
+}

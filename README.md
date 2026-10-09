@@ -1,0 +1,31 @@
+# OpenBack community plugins
+
+Free, open-source plugins for OpenBack written by the community: integrations, LogicBlock libraries and function
+templates. OpenBack reads this repository's catalog (`index.json`, signed: `index.json.sig`) and downloads the
+archives under `dist/`; the plugins appear in Settings > Integrations, Settings > Libraries and Settings > Templates
+with a **Community** label. An official plugin with the same type and slug hides the community one.
+
+License: each plugin's `license` in `index.json`; when a plugin has none, the repository's (GPL-3.0, see `LICENSE`).
+
+## Layout
+
+| Path | What |
+|---|---|
+| `repository.json` | channel, signing publisher id, default license |
+| `categories.json` | the categories' labels (Italian, English) per plugin type |
+| `plugins/integrations/<slug>/` | an integration package (OpenBack Integration SDK): `manifest.json`, `integration.py`, `doc/` |
+| `plugins/serverless-function-libraries/<slug>/` | a serverless function (LogicBlock) library: `manifest.json`, `library.py`, `doc/` |
+| `plugins/templates/<slug>/` | a function template: `template.json`, `doc/` |
+| `plugins/<type>/<slug>/plugin.json` | optional catalog data: `license`, `tags`, `requires.plugins` |
+| `dist/<type>/<slug>/` | the published archives (`.obint`, `.oblib`, `.obtpl`), never changed once published |
+| `tools/build.py` | checks the plugins, packs new versions and signs `index.json` |
+
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md). Check your plugin locally with:
+
+```
+python tools/build.py --check
+```
+
+Maintainers publish with `python tools/build.py --key <community private key>`.
