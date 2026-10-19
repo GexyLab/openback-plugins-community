@@ -1,5 +1,5 @@
 """Builds an OpenBack plugin repository (openback-plugins-official, openback-plugins-community): checks every plugin (the
-folders plugins/integrations/, plugins/serverless-function-libraries/ and plugins/templates/), packs the archive of each version not yet published into dist/, and writes the catalog OpenBack reads,
+folders plugins/integrations/, plugins/serverless-function-libraries/, plugins/templates/ and plugins/mcp-servers/), packs the archive of each version not yet published into dist/, and writes the catalog OpenBack reads,
 index.json, signed with the repository's key (index.json.sig).
 
 SHARED FILE: the master copy is tools/plugins/repo_build.py of the OpenBack repository; each plugin repository carries
@@ -12,10 +12,12 @@ Layout of a repository:
 
     repository.json                      {"channel": "official"|"community", "publisher": "<signing key id>",
                                           "license": "<SPDX id>", "name": "..."}
-    categories.json                      {"integration"|"library"|"template": {"<key>": {"it": ..., "en": ...}}}
+    categories.json                      {"integration"|"library"|"template"|"mcp-server": {"<key>": {"it": ..., "en": ...}}}
     plugins/integrations/<slug>/         an integration package (SDK): manifest.json, integration.py, doc/, ...
     plugins/serverless-function-libraries/<slug>/  a serverless function (LogicBlock) library: manifest.json, library.py (or "provided_by": "engine"), doc/
-    templates/<slug>/                    a function template: template.json, doc/
+    plugins/templates/<slug>/            a function template: template.json, doc/
+    plugins/mcp-servers/<slug>/          an MCP server (mcp-service): manifest.json ("native": tools on an integration's
+                                         operations and on functions from templates; "proxy": a remote MCP server), doc/
     plugins/<integrations|serverless-function-libraries|templates>/<slug>/plugin.json   optional, the catalog's extra data: {"license", "pricing",
                                          "tags", "author", "homepage", "requires": {"plugins": [{"type", "slug"}]}}
     dist/<type>/<slug>/<slug>-<version>.<ext>   the published archives (never changed once published)
@@ -23,6 +25,12 @@ Layout of a repository:
 
 A plugin's license is its plugin.json "license"; without one, the repository's (repository.json). Its documentation is
 the doc/ folder inside it (README.md first), shipped in its archive.
+
+Authoring-only files live next to a plugin but are never part of it: the plugin folder's own build.py, build_docs.py and
+build_manifest.py (the scripts that write its manifest and docs), any tests/ folder, __pycache__/ and *.pyc. They never go
+into an archive, and adding, changing or removing them never alters a published version: a version published while one
+of them was still packed (before this rule) is compared without it. Line endings are not content either: text files
+are kept LF (the repository's .gitattributes), and a version once packed from a CRLF working copy still matches.
 
 Only the standard library and `cryptography` (Ed25519).
 """
@@ -42,19 +50,32 @@ TYPES = {  # type -> (folder, manifest file, archive extension)
     "integration": ("integrations", "manifest.json", ".obint"),
     "library": ("serverless-function-libraries", "manifest.json", ".oblib"),
     "template": ("templates", "template.json", ".obtpl"),
+    "mcp-server": ("mcp-servers", "manifest.json", ".obmcp"),
 }
 INDEX_SCHEMA = 1
 SLUG = {
     "integration": re.compile(r"^[a-z][a-z0-9-]{1,39}$"),
     "library": re.compile(r"^[a-z][a-z0-9_-]{1,30}(\.[a-z0-9][a-z0-9_-]{0,30})?$"),
     "template": re.compile(r"^[a-z0-9]+(-[a-z0-9]+)*$"),
+    "mcp-server": re.compile(r"^[a-z][a-z0-9-]{1,39}$"),
 }
 SEMVER = re.compile(r"^(\d{1,4})\.(\d{1,4})\.(\d{1,6})$")
 PRICING = ("free", "paid")
 SKIP_DIRS = {"__pycache__", ".git", ".venv", "venv", ".pytest_cache", ".mypy_cache", "tests", "dist", "build"}
-SKIP_FILES = {"plugin.json", "build.py"}
-SKIP_SUFFIXES = (".pyc", ".pyo", ".obint", ".oblib", ".obtpl")
-MAX_ARCHIVE_BYTES = {"integration": 12 * 1024 * 1024, "library": 4 * 1024 * 1024, "template": 4 * 1024 * 1024}
+AUTHORING_FILES = {"build.py", "build_docs.py", "build_manifest.py"}  # in the plugin's root folder only
+SKIP_FILES = {"plugin.json"} | AUTHORING_FILES
+SKIP_SUFFIXES = (".pyc", ".pyo", ".obint", ".oblib", ".obtpl", ".obmcp")
+# Text files: the repository keeps them LF (.gitattributes); a published archive packed from a CRLF working copy is
+# still the same version (see same_content).
+TEXT_SUFFIXES = (".md", ".py", ".json", ".txt", ".yml", ".yaml", ".toml", ".cfg", ".ini", ".csv", ".html", ".js", ".css", ".sql", ".svg")
+MAX_ARCHIVE_BYTES = {"integration": 12 * 1024 * 1024, "library": 4 * 1024 * 1024, "template": 4 * 1024 * 1024,
+                     "mcp-server": 1024 * 1024}
+# An MCP server plugin (mcp-service): its tools and what they run. "native": operations / query templates of one
+# integration and functions made from templates; "proxy": a remote MCP server reached through the "mcp" integration.
+MCP_TOOL_NAME = re.compile(r"^[A-Za-z0-9_.-]{1,64}$")
+MCP_TOOL_KINDS = ("operation", "function")  # query templates are the project's own: not in plugins
+MCP_APPROVALS = ("none", "client", "portal")
+MCP_REMOTE_AUTH = ("oauth", "bearer", "header", "none")
 SIGNATURE = "SIGNATURE.json"
 ZIP_DATE = (2020, 1, 1, 0, 0, 0)
 
@@ -123,6 +144,30 @@ def zip_bytes(files: dict) -> bytes:
             info.compress_type = zipfile.ZIP_DEFLATED
             archive.writestr(info, files[name])
     return buffer.getvalue()
+
+
+def authoring_only(path: str) -> bool:
+    """True for a path (inside a plugin, '/'-separated) that is never part of the plugin: see the module's docstring."""
+    parts = path.split("/")
+    return ((len(parts) == 1 and parts[0] in AUTHORING_FILES) or "tests" in parts[:-1] or "__pycache__" in parts[:-1]
+            or path.endswith((".pyc", ".pyo")))
+
+
+def _lf(name: str, data: bytes) -> bytes:
+    return data.replace(b"\r\n", b"\n") if name.lower().endswith(TEXT_SUFFIXES) else data
+
+
+def same_content(published: bytes, files: dict) -> bool:
+    """Whether a published archive holds these files, leaving out its authoring-only files (packed by older builds) and
+    a library's SIGNATURE.json (it only signs the rest), and reading text files whatever their line endings (older
+    builds packed some from CRLF working copies)."""
+    try:
+        with zipfile.ZipFile(io.BytesIO(published)) as archive:
+            old = {n: _lf(n, archive.read(n)) for n in archive.namelist()
+                   if not n.endswith("/") and n != SIGNATURE and not authoring_only(n)}
+    except (zipfile.BadZipFile, OSError):
+        return False
+    return old == {n: _lf(n, c) for n, c in files.items() if n != SIGNATURE}
 
 
 def load_key(args):
@@ -233,6 +278,77 @@ def entry_template(slug: str, t: dict, errors: list) -> dict:
                         "steps": text(t.get("steps"))}}
 
 
+def entry_mcp_server(slug: str, m: dict, errors: list) -> dict:
+    """The checks mcp-service repeats when it stores the plugin (server_plugins.validate)."""
+    if m.get("schema_version") != 1:
+        errors.append("manifest.json: schema_version must be 1")
+    mode = m.get("mode")
+    if mode not in ("native", "proxy"):
+        errors.append('manifest.json: mode must be "native" or "proxy"')
+    tools, names, keys = m.get("tools") or [], set(), set()
+    if not isinstance(tools, list):
+        errors.append("manifest.json: tools must be a list")
+        tools = []
+    integration = (m.get("integration") or {}).get("package") if isinstance(m.get("integration"), dict) else None
+    remote = m.get("remote") if isinstance(m.get("remote"), dict) else None
+    if mode == "native":
+        if not integration and any(t.get("kind") != "function" for t in tools if isinstance(t, dict)):
+            errors.append("manifest.json: integration.package is required for operation tools")
+        if not tools:
+            errors.append("manifest.json: a native server lists its tools")
+    if mode == "proxy":
+        if not remote or not str(remote.get("url") or "").startswith("https://"):
+            errors.append("manifest.json: remote.url (https) is required for a proxy server")
+        elif any(a not in MCP_REMOTE_AUTH for a in remote.get("auth") or []) or not remote.get("auth"):
+            errors.append(f"manifest.json: remote.auth must list some of {MCP_REMOTE_AUTH}")
+        if tools:
+            errors.append("manifest.json: a proxy server has no tools (they are imported from the remote server)")
+    templates = []
+    for i, t in enumerate(tools):
+        at = f"tools[{i}]"
+        if not isinstance(t, dict):
+            errors.append(f"{at}: must be an object")
+            continue
+        name = str(t.get("name") or "")
+        if not MCP_TOOL_NAME.match(name):
+            errors.append(f"{at}: invalid name {name!r}")
+        if name in names:
+            errors.append(f"{at}: duplicate name {name}")
+        names.add(name)
+        key = str(t.get("key") or name)
+        if key in keys:
+            errors.append(f"{at}: duplicate key {key}")
+        keys.add(key)
+        kind = t.get("kind") or "operation"
+        if kind not in MCP_TOOL_KINDS:
+            errors.append(f"{at}: kind must be one of {MCP_TOOL_KINDS}")
+        if kind == "operation" and not t.get("operation"):
+            errors.append(f"{at}: operation is required")
+        if kind == "function":
+            if not SLUG["template"].match(str(t.get("template") or "")):
+                errors.append(f"{at}: template (a function template's slug) is required")
+            else:
+                templates.append(t["template"])
+            schema = t.get("input_schema")
+            if schema is not None and (not isinstance(schema, dict) or schema.get("type", "object") != "object"):
+                errors.append(f"{at}: input_schema must be a JSON Schema of type object")
+        if (t.get("approval") or "none") not in MCP_APPROVALS:
+            errors.append(f"{at}: approval must be one of {MCP_APPROVALS}")
+        if not isinstance(t.get("fixed_params") or {}, dict):
+            errors.append(f"{at}: fixed_params must be an object")
+        if not text(t.get("description"))["en"]:
+            errors.append(f"{at}: description (English first: models read it) is required")
+    return {"name": text(m.get("name"), slug), "description": text(m.get("description")), "category": str(m.get("category") or "other").lower(),
+            "icon": m.get("icon") or "server", "author": m.get("author") or "", "homepage": m.get("homepage") or "",
+            "keywords": {"it": [t.get("name", "") for t in tools if isinstance(t, dict)] + [text(m.get("vendor"))["it"]],
+                         "en": [t.get("name", "") for t in tools if isinstance(t, dict)] + [text(m.get("vendor"))["en"]]},
+            "details": {"mode": mode, "integration": integration, "tools": len(tools),
+                        "functions": len([t for t in tools if isinstance(t, dict) and t.get("kind") == "function"]),
+                        "templates": sorted(set(templates)), "vendor": text(m.get("vendor")),
+                        "remote_url": (remote or {}).get("url") or "", "remote_auth": list((remote or {}).get("auth") or []),
+                        "read_only": len([t for t in tools if isinstance(t, dict) and t.get("read_only")])}}
+
+
 def collect(repo: dict, key, check_only: bool) -> tuple:
     """-> (catalog entries, problems, archives written)."""
     entries, problems, written = [], [], []
@@ -265,6 +381,8 @@ def collect(repo: dict, key, check_only: bool) -> tuple:
                 entry = entry_integration(slug, manifest, errors)
             elif ptype == "library":
                 entry = entry_library(slug, manifest, files, publisher, errors)
+            elif ptype == "mcp-server":
+                entry = entry_mcp_server(slug, manifest, errors)
             else:
                 entry = entry_template(slug, manifest, errors)
             requires = _requires(plugin, errors)
@@ -279,10 +397,12 @@ def collect(repo: dict, key, check_only: bool) -> tuple:
                 data = build_archive(ptype, files, key, publisher)
                 if os.path.isfile(target):
                     with open(target, "rb") as f:
-                        if f.read() != data:
-                            problems.append(f"{ptype} {slug}: version {version} is already published with different content: "
-                                            "raise the version")
-                            continue
+                        published = f.read()
+                    # The published archive is never rewritten: same files (authoring-only ones aside) = same version.
+                    if published != data and not same_content(published, files):
+                        problems.append(f"{ptype} {slug}: version {version} is already published with different content: "
+                                        "raise the version")
+                        continue
                 else:
                     os.makedirs(ddir, exist_ok=True)
                     with open(target, "wb") as f:
