@@ -1,0 +1,71 @@
+[build-system]
+requires = ["hatchling>=1.27"]
+build-backend = "hatchling.build"
+
+[project]
+name = "openback-app-auth-python"
+version = "1.0.0"
+description = "Python SDK for OpenBack's App authenticator: sign users in to an OpenBack user pool and verify its tokens (FastAPI, Flask, Django)."
+readme = "README.md"
+requires-python = ">=3.9"
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [{ name = "GexyLab" }]
+keywords = ["openback", "auth", "oidc", "authentication"]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Developers",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Framework :: FastAPI",
+    "Framework :: Flask",
+    "Framework :: Django",
+    "Topic :: Security",
+    "Topic :: Internet :: WWW/HTTP :: Session",
+    "Typing :: Typed",
+]
+dependencies = [
+    "httpx>=0.24,<1",
+    "PyJWT[crypto]>=2.8,<3",
+]
+
+[project.optional-dependencies]
+fastapi = ["fastapi>=0.100"]
+flask = ["flask>=2.2"]
+django = ["django>=4.2"]
+test = [
+    "pytest>=7",
+    "fastapi>=0.100",
+    "flask>=2.2",
+    "django>=4.2",
+]
+
+[project.urls]
+Homepage = "https://github.com/GexyLab/openback-plugins-community"
+Repository = "https://github.com/GexyLab/openback-plugins-community"
+Documentation = "https://github.com/GexyLab/openback-plugins-community/tree/production/SDK/Auth/python/1.0.0"
+Changelog = "https://github.com/GexyLab/openback-plugins-community/blob/production/SDK/Auth/python/1.0.0/CHANGELOG.md"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/openback_app_auth"]
+
+[tool.hatch.build.targets.sdist]
+include = [
+    "src/openback_app_auth",
+    "tests",
+    "examples",
+    "README.md",
+    "CHANGELOG.md",
+    "LICENSE",
+    "pyproject.toml",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra"

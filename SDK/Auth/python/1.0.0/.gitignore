@@ -1,0 +1,23 @@
+# virtual environments
+.venv/
+venv/
+env/
+
+# build artifacts
+build/
+dist/
+*.egg-info/
+*.whl
+*.tar.gz
+
+# caches
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# local sessions written by the examples
+*.session.json
