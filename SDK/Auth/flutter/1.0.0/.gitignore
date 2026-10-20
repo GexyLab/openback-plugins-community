@@ -1,0 +1,14 @@
+# Dart / Flutter build output and tooling
+.dart_tool/
+.packages
+.flutter-plugins
+.flutter-plugins-dependencies
+build/
+coverage/
+pubspec.lock
+*.iml
+.idea/
+.vscode/
+example/.dart_tool/
+example/build/
+example/pubspec.lock

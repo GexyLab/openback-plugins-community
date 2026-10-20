@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<!-- The web redirect page of the hosted sign-in (flutter_web_auth_2): it hands the callback address to the app
+     window that opened it, then closes. Register <origin>/auth.html as a redirect address of the pool's `spa` app. -->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Signing in…</title>
+</head>
+<body>
+  <p>Sign-in complete. If this window does not close by itself, close it.</p>
+  <script>
+    (function () {
+      var message = { "flutter-web-auth-2": window.location.href };
+      if (window.opener) {
+        window.opener.postMessage(message, window.location.origin);
+        window.close();
+      } else if (window.parent && window.parent !== window) {
+        window.parent.postMessage(message, window.location.origin);
+      } else {
+        localStorage.setItem("flutter-web-auth-2", window.location.href);
+        window.close();
+      }
+    })();
+  </script>
+</body>
+</html>

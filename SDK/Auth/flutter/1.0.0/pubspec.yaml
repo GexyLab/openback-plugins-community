@@ -1,0 +1,41 @@
+# Base name: openback-app-auth-flutter. pub.dev forbids hyphens in package names, hence openback_app_auth_flutter.
+name: openback_app_auth_flutter
+description: >-
+  Flutter client for OpenBack App authenticator user pools: password, email code, guest, two-step and hosted
+  (OpenID Connect + PKCE) sign-in, secure token storage and single-flight token renewal.
+version: 1.0.0
+homepage: https://github.com/GexyLab/openback-plugins-community/tree/production/SDK/Auth/flutter/1.0.0
+repository: https://github.com/GexyLab/openback-plugins-community
+issue_tracker: https://github.com/GexyLab/openback-plugins-community/issues
+topics:
+  - openback
+  - auth
+  - oidc
+  - authentication
+# Not published yet: remove this line when the package is published to pub.dev.
+publish_to: none
+
+environment:
+  sdk: ">=3.3.0 <4.0.0"
+  flutter: ">=3.19.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  crypto: ^3.0.3
+  flutter_secure_storage: ^9.2.2
+  flutter_web_auth_2: ">=3.1.0 <5.0.0"
+  http: ">=1.1.0 <2.0.0"
+
+dev_dependencies:
+  flutter_lints: ">=3.0.0 <6.0.0"
+  flutter_test:
+    sdk: flutter
+
+platforms:
+  android:
+  ios:
+  linux:
+  macos:
+  web:
+  windows:
