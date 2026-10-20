@@ -1,0 +1,11 @@
+# SwiftPM / Xcode / CocoaPods output
+.build/
+.swiftpm/
+Package.resolved
+DerivedData/
+xcuserdata/
+*.xcuserstate
+Pods/
+*.xcframework
+*.zip
+.DS_Store
