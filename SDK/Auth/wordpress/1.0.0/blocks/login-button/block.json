@@ -1,0 +1,19 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 3,
+	"name": "openback-app-auth/login-button",
+	"version": "1.0.0",
+	"title": "OpenBack sign-in button",
+	"category": "widgets",
+	"icon": "admin-network",
+	"description": "A \"Sign in with ...\" button for the OpenBack user pool (shown to signed-out visitors).",
+	"keywords": ["openback", "login", "sign in", "oidc"],
+	"textdomain": "openback-app-auth-wordpress",
+	"attributes": {
+		"label": {"type": "string", "default": ""},
+		"redirectTo": {"type": "string", "default": ""},
+		"showLogout": {"type": "boolean", "default": false}
+	},
+	"supports": {"html": false, "align": ["left", "center", "right"], "spacing": {"margin": true}},
+	"editorScript": "file:./index.js"
+}

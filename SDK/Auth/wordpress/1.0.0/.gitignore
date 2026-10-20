@@ -1,0 +1,6 @@
+dist/
+vendor/
+composer.lock
+.phpunit.cache/
+.phpunit.result.cache
+php_errors.log

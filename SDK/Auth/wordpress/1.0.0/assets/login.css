@@ -1,0 +1,53 @@
+/* OpenBack App Auth: the sign-in button. */
+.openback-app-auth-login {
+	clear: both;
+	margin: 16px 0 8px;
+	text-align: center;
+}
+.openback-app-auth-login .openback-app-auth-button {
+	display: block;
+	width: 100%;
+	box-sizing: border-box;
+	text-align: center;
+	float: none;
+}
+.openback-app-auth-separator {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	margin: 0 0 12px;
+	color: #646970;
+}
+.openback-app-auth-separator::before,
+.openback-app-auth-separator::after {
+	content: "";
+	flex: 1;
+	border-top: 1px solid #dcdcde;
+}
+.openback-app-auth-password-link {
+	margin-top: 12px;
+	font-size: 13px;
+}
+.openback-app-auth-shortcode .openback-app-auth-button,
+.openback-app-auth-block .openback-app-auth-button {
+	display: inline-block;
+	padding: 0.6em 1.2em;
+	border-radius: 4px;
+	background: #2271b1;
+	color: #fff;
+	text-decoration: none;
+	line-height: 1.4;
+}
+.openback-app-auth-shortcode .openback-app-auth-button:hover,
+.openback-app-auth-block .openback-app-auth-button:hover,
+.openback-app-auth-shortcode .openback-app-auth-button:focus,
+.openback-app-auth-block .openback-app-auth-button:focus {
+	background: #135e96;
+	color: #fff;
+}
+.openback-app-auth-shortcode .openback-app-auth-logout,
+.openback-app-auth-block .openback-app-auth-logout {
+	background: transparent;
+	color: inherit;
+	text-decoration: underline;
+}
