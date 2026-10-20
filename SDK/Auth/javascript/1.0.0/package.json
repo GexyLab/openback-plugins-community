@@ -1,0 +1,37 @@
+{
+  "name": "openback-app-auth-javascript",
+  "version": "1.0.0",
+  "description": "Browser client of an OpenBack user pool (App authenticator): sign-up, sign-in, MFA, tokens with rotation, organizations, OpenID Connect redirect with PKCE.",
+  "keywords": ["openback", "auth", "oidc", "authentication", "pkce", "browser"],
+  "author": "GexyLab",
+  "license": "MIT",
+  "homepage": "https://github.com/GexyLab/openback-plugins-community/tree/production/SDK/Auth/javascript/1.0.0#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/GexyLab/openback-plugins-community.git",
+    "directory": "SDK/Auth/javascript/1.0.0"
+  },
+  "bugs": "https://github.com/GexyLab/openback-plugins-community/issues",
+  "type": "module",
+  "main": "./src/index.js",
+  "module": "./src/index.js",
+  "types": "./src/index.d.ts",
+  "unpkg": "./dist/openback-app-auth.umd.min.js",
+  "jsdelivr": "./dist/openback-app-auth.umd.min.js",
+  "exports": {
+    ".": {
+      "types": "./src/index.d.ts",
+      "import": "./src/index.js",
+      "default": "./src/index.js"
+    },
+    "./dist/*": "./dist/*",
+    "./package.json": "./package.json"
+  },
+  "files": ["src", "dist", "README.md", "CHANGELOG.md", "LICENSE"],
+  "sideEffects": false,
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "check-dist": "node scripts/build.mjs --check",
+    "test": "node --test"
+  }
+}

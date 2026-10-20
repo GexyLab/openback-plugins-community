@@ -1,0 +1,5 @@
+node_modules/
+*.tgz
+.DS_Store
+coverage/
+# dist/ is committed on purpose: the browser bundles are part of the package.

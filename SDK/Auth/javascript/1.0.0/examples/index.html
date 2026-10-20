@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>OpenBack App Auth example</title>
+  <style>
+    body { font: 15px/1.5 system-ui, sans-serif; max-width: 640px; margin: 2rem auto; padding: 0 16px; color: #1d2433; }
+    fieldset { border: 1px solid #ccd; border-radius: 8px; margin: 0 0 1rem; padding: 1rem; }
+    label { display: block; margin: .4rem 0; }
+    input { width: 100%; padding: .4rem; box-sizing: border-box; }
+    button { padding: .45rem .9rem; margin: .3rem .3rem 0 0; cursor: pointer; }
+    pre { background: #f4f5f8; padding: .8rem; border-radius: 6px; overflow: auto; }
+    .hidden { display: none; }
+    .error { color: #b00020; }
+  </style>
+</head>
+<body>
+  <h1>OpenBack App Auth</h1>
+  <p>Serve the package directory over http(s) (e.g. <code>python -m http.server 8080</code> in
+    <code>SDK/Auth/javascript/1.0.0</code>, then open <code>http://localhost:8080/examples/</code>). In the pool, register
+    a <strong>spa</strong> app with this origin as an allowed origin and this page's address as a redirect URI and a
+    post-logout redirect URI.</p>
+
+  <fieldset>
+    <legend>Pool</legend>
+    <label>Issuer <input id="issuer" placeholder="https://api.example.com/gateway/shop/auth/main"></label>
+    <label>Client ID <input id="clientId" placeholder="uapp_..."></label>
+    <button id="saveConfig">Use this pool</button>
+  </fieldset>
+
+  <fieldset id="signedOut" class="hidden">
+    <legend>Sign in</legend>
+    <form id="passwordForm">
+      <label>Email <input id="email" type="email" autocomplete="username" required></label>
+      <label>Password <input id="password" type="password" autocomplete="current-password" required></label>
+      <button type="submit">Sign in with password</button>
+    </form>
+    <form id="mfaForm" class="hidden">
+      <label>Two-step verification code <input id="mfaCode" inputmode="numeric" autocomplete="one-time-code" required></label>
+      <button type="submit">Verify</button>
+    </form>
+    <button id="hosted">Sign in with the hosted page</button>
+  </fieldset>
+
+  <fieldset id="signedIn" class="hidden">
+    <legend>Signed in</legend>
+    <p>Hello <strong id="who"></strong></p>
+    <label>Your API (called with the access token) <input id="apiUrl" placeholder="https://api.example.com/gateway/shop/orders"></label>
+    <button id="callApi">Call API</button>
+    <button id="signOut">Sign out</button>
+    <button id="signOutHosted">Sign out (hosted page too)</button>
+  </fieldset>
+
+  <p id="message" class="error"></p>
+  <pre id="output"></pre>
+
+  <script src="../dist/openback-app-auth.umd.js"></script>
+  <script>
+    const $ = (id) => document.getElementById(id);
+    const show = (el, on) => el.classList.toggle("hidden", !on);
+    const say = (text) => { $("message").textContent = text || ""; };
+    const out = (value) => { $("output").textContent = value == null ? "" : JSON.stringify(value, null, 2); };
+
+    $("issuer").value = localStorage.getItem("example.issuer") || "";
+    $("clientId").value = localStorage.getItem("example.clientId") || "";
+    $("saveConfig").onclick = () => {
+      localStorage.setItem("example.issuer", $("issuer").value.trim());
+      localStorage.setItem("example.clientId", $("clientId").value.trim());
+      location.reload();
+    };
+
+    const issuer = $("issuer").value;
+    const clientId = $("clientId").value;
+    if (issuer && clientId) start();
+
+    async function start() {
+      const auth = OpenBackAppAuth.createAuth({ issuer, clientId, redirectUri: location.origin + location.pathname });
+
+      auth.onAuthStateChanged((user) => {
+        show($("signedIn"), Boolean(user) || auth.isSignedIn);
+        show($("signedOut"), !auth.isSignedIn);
+        $("who").textContent = user ? (user.display_name || user.email || user.id) : "";
+      });
+
+      // Back from the hosted page: exchange the code, then remove it from the address bar.
+      try {
+        const user = await auth.handleRedirectCallback();
+        if (user) { out(user); history.replaceState(null, "", location.pathname); }
+      } catch (e) {
+        say(`${e.code}: ${e.message}`);
+        history.replaceState(null, "", location.pathname);
+      }
+
+      let mfaToken = null;
+      $("passwordForm").onsubmit = async (ev) => {
+        ev.preventDefault();
+        say("");
+        try {
+          const res = await auth.signInWithPassword({ email: $("email").value, password: $("password").value });
+          $("password").value = "";
+          handleOutcome(res);
+        } catch (e) { say(`${e.code}: ${e.message}`); }
+      };
+      $("mfaForm").onsubmit = async (ev) => {
+        ev.preventDefault();
+        try {
+          handleOutcome(await auth.verifyMfa({ mfaToken, code: $("mfaCode").value.trim() }));
+        } catch (e) { say(`${e.code}: ${e.message}`); }
+      };
+      function handleOutcome(res) {
+        show($("mfaForm"), false);
+        switch (res.status) {
+          case "ok": out(res.user); break;
+          case "mfa_required": mfaToken = res.mfa_token; show($("mfaForm"), true); break;
+          case "mfa_enroll_required": say("This pool requires two-step verification: enroll with auth.enrollMfa(mfaToken)."); break;
+          case "verification_required": say("Check your inbox to verify the email address."); break;
+          case "password_change_required": say("A new password is required: auth.changeForcedPassword({ changeToken, newPassword })."); break;
+        }
+      }
+
+      $("hosted").onclick = () => auth.signInWithRedirect().catch((e) => say(e.message));
+      $("signOut").onclick = () => auth.signOut().then(() => out(null));
+      $("signOutHosted").onclick = () => auth.signOutRedirect({ postLogoutRedirectUri: location.origin + location.pathname });
+      $("callApi").onclick = async () => {
+        try {
+          const res = await auth.fetch($("apiUrl").value);
+          out({ status: res.status, body: await res.text() });
+        } catch (e) { say(`${e.code || "error"}: ${e.message}`); }
+      };
+    }
+  </script>
+</body>
+</html>
