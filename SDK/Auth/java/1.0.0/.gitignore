@@ -1,0 +1,20 @@
+# Gradle
+.gradle/
+build/
+**/build/
+!gradle/wrapper/gradle-wrapper.jar
+.kotlin/
+
+# IDEs
+.idea/
+*.iml
+.vscode/
+out/
+bin/
+.settings/
+.project
+.classpath
+
+# Never commit sessions or secrets
+*.session
+local.properties
