@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <IsPackable>false</IsPackable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Once published: <PackageReference Include="openback-app-auth-csharp" Version="1.0.0" /> -->
+    <ProjectReference Include="..\..\src\OpenBack.AppAuth\OpenBack.AppAuth.csproj" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,10 @@
+# Build output and packages: never committed
+bin/
+obj/
+dist/
+*.nupkg
+*.snupkg
+TestResults/
+.vs/
+*.user
+*.suo

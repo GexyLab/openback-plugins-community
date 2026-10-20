@@ -1,0 +1,21 @@
+<Project>
+  <!-- Shared settings of every project in this directory (package metadata, language). -->
+  <PropertyGroup>
+    <Version>1.0.0</Version>
+    <Authors>GexyLab</Authors>
+    <Company>GexyLab</Company>
+    <Product>OpenBack App Auth</Product>
+    <Copyright>Copyright (c) 2026 GexyLab and the OpenBack contributors</Copyright>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageProjectUrl>https://github.com/GexyLab/openback-plugins-community</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/GexyLab/openback-plugins-community</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageTags>openback;auth;oidc;authentication</PackageTags>
+    <PackageReleaseNotes>First release. See CHANGELOG.md (SDK/Auth/csharp/1.0.0).</PackageReleaseNotes>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <Deterministic>true</Deterministic>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+  </PropertyGroup>
+</Project>

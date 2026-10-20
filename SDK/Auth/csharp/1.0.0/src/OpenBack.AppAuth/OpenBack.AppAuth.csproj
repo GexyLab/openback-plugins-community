@@ -1,0 +1,29 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>netstandard2.0;net8.0</TargetFrameworks>
+    <RootNamespace>OpenBack.AppAuth</RootNamespace>
+    <AssemblyName>OpenBack.AppAuth</AssemblyName>
+    <PackageId>openback-app-auth-csharp</PackageId>
+    <Title>OpenBack App Auth for .NET</Title>
+    <Description>Client of an OpenBack user pool (App authenticator, users-service) for .NET apps (desktop, MAUI, Xamarin, Unity, console, servers): sign-up and sign-in with your own forms, two-step verification, organizations, hosted sign-in page (OpenID Connect + PKCE, loopback redirect for desktop apps), automatic token renewal, local token verification (ES256) and an OpenID Connect web client. Sources: SDK/Auth/csharp/1.0.0.</Description>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+    <IsPackable>true</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
+    <PackageReference Include="System.Text.Json" Version="8.0.5" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\..\README.md" Pack="true" PackagePath="\" />
+    <None Include="..\..\LICENSE" Pack="true" PackagePath="\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="OpenBack.AppAuth.Tests" />
+  </ItemGroup>
+
+</Project>
