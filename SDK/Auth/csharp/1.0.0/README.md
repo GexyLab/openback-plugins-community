@@ -309,8 +309,9 @@ client clears it and raises `AuthStateChanged` (signed out); `e.IsSessionEnded` 
   codes and messages only.
 - Access tokens are verified locally and cannot be revoked before they expire: keep the pool's access token lifetime
   short; for sensitive operations call `MeAsync()` (the pool checks the session right now).
-- Switching to an organization the user does not belong to (`not_a_member`) consumes the refresh token on the pool:
-  the client clears the session in that case. Check `GetOrganizationsAsync()` first.
+- Switching to an organization the user does not belong to answers `not_a_member` (403) and leaves the session as it
+  was. If the membership ends during the switch, the pool answers with tokens for another organization: read the
+  returned organization.
 
 ## License
 

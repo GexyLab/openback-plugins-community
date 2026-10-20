@@ -345,9 +345,9 @@ struct Client::Impl {
                 data = call("POST", "/token/refresh", &body, std::nullopt);
             }
         } catch (const AppAuthError& e) {
-            // 401: the refresh token is refused. 403 not_a_member on a switch: the pool used the refresh token before
-            // refusing, so the stored one is spent too.
-            dead = e.status() == 401 || (switching && e.status() == 403 && e.code() == "not_a_member");
+            // 401: the refresh token is refused. A 403 not_a_member on a switch leaves it valid (the pool checks the
+            // membership before using it).
+            dead = e.status() == 401;
             error = std::current_exception();
         } catch (...) {
             error = std::current_exception();

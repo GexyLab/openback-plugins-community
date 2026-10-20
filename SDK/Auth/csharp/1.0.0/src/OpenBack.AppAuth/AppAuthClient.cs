@@ -405,9 +405,9 @@ namespace OpenBack.AppAuth
                     // Not cancellable once sent: the refresh token rotates.
                     data = await SendApiAsync(HttpMethod.Post, "/orgs/switch", body, current.AccessToken, CancellationToken.None).ConfigureAwait(false);
                 }
-                catch (AppAuthException e) when (e.IsSessionEnded || e.Code == "not_a_member")
+                catch (AppAuthException e) when (e.IsSessionEnded)
                 {
-                    // not_a_member: the pool has already consumed the refresh token, the session cannot be renewed.
+                    // not_a_member is not here: the pool checks the membership before using the refresh token.
                     await ClearAsync().ConfigureAwait(false);
                     throw;
                 }
