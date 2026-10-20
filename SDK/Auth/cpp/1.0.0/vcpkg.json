@@ -1,0 +1,23 @@
+{
+  "$schema": "https://raw.githubusercontent.com/microsoft/vcpkg-tool/main/docs/vcpkg.schema.json",
+  "name": "openback-app-auth-cpp",
+  "version": "1.0.0",
+  "maintainers": "GexyLab",
+  "description": "C++ SDK of the OpenBack App authenticator (user pools): sign-in, sessions, OIDC with PKCE, ES256 token verification. Sources: SDK/Auth/cpp/1.0.0.",
+  "homepage": "https://github.com/GexyLab/openback-plugins-community",
+  "license": "MIT",
+  "supports": "!uwp",
+  "dependencies": [
+    "curl",
+    "openssl",
+    "nlohmann-json"
+  ],
+  "features": {
+    "tests": {
+      "description": "Build the unit tests (Catch2 v3)",
+      "dependencies": [
+        "catch2"
+      ]
+    }
+  }
+}

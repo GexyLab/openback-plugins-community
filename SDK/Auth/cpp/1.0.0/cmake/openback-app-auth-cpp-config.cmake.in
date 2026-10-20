@@ -1,0 +1,16 @@
+@PACKAGE_INIT@
+
+include(CMakeFindDependencyMacro)
+
+find_dependency(nlohmann_json 3.9)
+# Needed by consumers of the static library (the shared one links them privately).
+find_dependency(OpenSSL 1.1.1)
+find_dependency(Threads)
+set(OPENBACK_APP_AUTH_WITH_CURL @OPENBACK_APP_AUTH_WITH_CURL@)
+if(OPENBACK_APP_AUTH_WITH_CURL)
+    find_dependency(CURL)
+endif()
+
+include("${CMAKE_CURRENT_LIST_DIR}/openback-app-auth-cpp-targets.cmake")
+
+check_required_components(openback-app-auth-cpp)

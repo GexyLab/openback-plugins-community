@@ -1,0 +1,24 @@
+# Build trees and package-manager output (never committed)
+build/
+build-*/
+out/
+cmake-build-*/
+vcpkg_installed/
+CMakeUserPresets.json
+conan.lock
+conanbuildinfo.*
+graph_info.json
+*.o
+*.obj
+*.a
+*.lib
+*.so
+*.so.*
+*.dylib
+*.dll
+*.exe
+*.pdb
+.vs/
+.vscode/
+.idea/
+__pycache__/
