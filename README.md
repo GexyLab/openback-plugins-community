@@ -19,6 +19,10 @@ License: each plugin's `license` in `index.json`; when a plugin has none, the re
 | `plugins/<type>/<slug>/plugin.json` | optional catalog data: `license`, `tags`, `requires.plugins` |
 | `dist/<type>/<slug>/` | the published archives (`.obint`, `.oblib`, `.obtpl`), never changed once published |
 | `tools/build.py` | checks the plugins, packs new versions and signs `index.json` |
+| `SDK/Auth/<platform>/<version>/` | the App authenticator SDKs and CMS plugins (`openback-app-auth-<platform>`), not part of the catalog: see [SDK/Auth](SDK/Auth/README.md) |
+
+The SDKs carry their own license (MIT; the WordPress and Joomla plugins GPL-2.0-or-later), stated in each package's
+`LICENSE`.
 
 ## Contributing
 
