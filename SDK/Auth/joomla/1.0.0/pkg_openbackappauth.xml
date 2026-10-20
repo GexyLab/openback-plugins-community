@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<extension type="package" method="upgrade">
+    <name>PKG_OPENBACKAPPAUTH</name>
+    <packagename>openbackappauth</packagename>
+    <author>GexyLab</author>
+    <creationDate>2026-10</creationDate>
+    <copyright>(C) 2026 GexyLab and the OpenBack contributors</copyright>
+    <license>GPL-2.0-or-later</license>
+    <authorUrl>https://github.com/GexyLab/openback-plugins-community</authorUrl>
+    <packager>GexyLab</packager>
+    <packagerurl>https://github.com/GexyLab/openback-plugins-community/tree/main/SDK/Auth/joomla/1.0.0</packagerurl>
+    <version>1.0.0</version>
+    <description>PKG_OPENBACKAPPAUTH_XML_DESCRIPTION</description>
+    <scriptfile>script.php</scriptfile>
+    <blockChildUninstall>true</blockChildUninstall>
+    <files folder="packages">
+        <file type="library" id="openbackappauth">lib_openbackappauth.zip</file>
+        <file type="plugin" id="openbackappauth" group="system">plg_system_openbackappauth.zip</file>
+        <file type="plugin" id="openbackappauth" group="authentication">plg_authentication_openbackappauth.zip</file>
+        <file type="plugin" id="openbackappauth" group="api-authentication">plg_api-authentication_openbackappauth.zip</file>
+        <file type="module" id="mod_openbackappauth_login" client="site">mod_openbackappauth_login.zip</file>
+    </files>
+    <languages folder="language">
+        <language tag="en-GB">en-GB/pkg_openbackappauth.sys.ini</language>
+        <language tag="it-IT">it-IT/pkg_openbackappauth.sys.ini</language>
+    </languages>
+</extension>

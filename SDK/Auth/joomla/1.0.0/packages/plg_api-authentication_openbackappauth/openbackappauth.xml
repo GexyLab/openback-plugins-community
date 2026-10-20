@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<extension type="plugin" group="api-authentication" method="upgrade">
+    <name>plg_api-authentication_openbackappauth</name>
+    <author>GexyLab</author>
+    <creationDate>2026-10</creationDate>
+    <copyright>(C) 2026 GexyLab and the OpenBack contributors</copyright>
+    <license>GPL-2.0-or-later</license>
+    <authorUrl>https://github.com/GexyLab/openback-plugins-community</authorUrl>
+    <version>1.0.0</version>
+    <description>PLG_API-AUTHENTICATION_OPENBACKAPPAUTH_XML_DESCRIPTION</description>
+    <namespace path="src">GexyLab\Plugin\ApiAuthentication\OpenBackAppAuth</namespace>
+    <files>
+        <folder plugin="openbackappauth">services</folder>
+        <folder>src</folder>
+    </files>
+    <languages folder="language">
+        <language tag="en-GB">en-GB/plg_api-authentication_openbackappauth.ini</language>
+        <language tag="en-GB">en-GB/plg_api-authentication_openbackappauth.sys.ini</language>
+        <language tag="it-IT">it-IT/plg_api-authentication_openbackappauth.ini</language>
+        <language tag="it-IT">it-IT/plg_api-authentication_openbackappauth.sys.ini</language>
+    </languages>
+    <config>
+        <fields name="params">
+            <fieldset name="basic">
+                <field name="client_ids" type="text" label="PLG_API-AUTHENTICATION_OPENBACKAPPAUTH_CLIENT_IDS_LABEL" description="PLG_API-AUTHENTICATION_OPENBACKAPPAUTH_CLIENT_IDS_DESC" filter="string" hint="uapp_mobile..., uapp_spa..." />
+            </fieldset>
+        </fields>
+    </config>
+</extension>

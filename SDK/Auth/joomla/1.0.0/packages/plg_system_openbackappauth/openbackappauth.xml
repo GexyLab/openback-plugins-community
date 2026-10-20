@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<extension type="plugin" group="system" method="upgrade">
+    <name>plg_system_openbackappauth</name>
+    <author>GexyLab</author>
+    <creationDate>2026-10</creationDate>
+    <copyright>(C) 2026 GexyLab and the OpenBack contributors</copyright>
+    <license>GPL-2.0-or-later</license>
+    <authorUrl>https://github.com/GexyLab/openback-plugins-community</authorUrl>
+    <version>1.0.0</version>
+    <description>PLG_SYSTEM_OPENBACKAPPAUTH_XML_DESCRIPTION</description>
+    <namespace path="src">GexyLab\Plugin\System\OpenBackAppAuth</namespace>
+    <files>
+        <folder plugin="openbackappauth">services</folder>
+        <folder>src</folder>
+    </files>
+    <languages folder="language">
+        <language tag="en-GB">en-GB/plg_system_openbackappauth.ini</language>
+        <language tag="en-GB">en-GB/plg_system_openbackappauth.sys.ini</language>
+        <language tag="it-IT">it-IT/plg_system_openbackappauth.ini</language>
+        <language tag="it-IT">it-IT/plg_system_openbackappauth.sys.ini</language>
+    </languages>
+    <config>
+        <fields name="params">
+            <fieldset name="basic" addfieldprefix="GexyLab\Plugin\System\OpenBackAppAuth\Field">
+                <field name="redirect_uri_note" type="redirecturi" label="PLG_SYSTEM_OPENBACKAPPAUTH_REDIRECT_URI_LABEL" description="PLG_SYSTEM_OPENBACKAPPAUTH_REDIRECT_URI_DESC" />
+                <field name="issuer" type="url" label="PLG_SYSTEM_OPENBACKAPPAUTH_ISSUER_LABEL" description="PLG_SYSTEM_OPENBACKAPPAUTH_ISSUER_DESC" filter="url" validate="url" scheme="https,http" hint="https://api.example.com/gateway/shop/auth/main" />
+                <field name="client_id" type="text" label="PLG_SYSTEM_OPENBACKAPPAUTH_CLIENT_ID_LABEL" filter="cmd" hint="uapp_..." />
+                <field name="client_secret" type="password" label="PLG_SYSTEM_OPENBACKAPPAUTH_CLIENT_SECRET_LABEL" description="PLG_SYSTEM_OPENBACKAPPAUTH_CLIENT_SECRET_DESC" filter="raw" autocomplete="new-password" />
+                <field name="scopes" type="text" label="PLG_SYSTEM_OPENBACKAPPAUTH_SCOPES_LABEL" default="openid profile email" filter="string" />
+                <field name="provider" type="text" label="PLG_SYSTEM_OPENBACKAPPAUTH_PROVIDER_LABEL" description="PLG_SYSTEM_OPENBACKAPPAUTH_PROVIDER_DESC" filter="cmd" hint="uprov_..." />
+                <field name="button_label" type="text" label="PLG_SYSTEM_OPENBACKAPPAUTH_BUTTON_LABEL_LABEL" description="PLG_SYSTEM_OPENBACKAPPAUTH_BUTTON_LABEL_DESC" filter="string" />
+            </fieldset>
+            <fieldset name="accounts" label="PLG_SYSTEM_OPENBACKAPPAUTH_FIELDSET_ACCOUNTS">
+                <field name="auto_create" type="radio" layout="joomla.form.field.radio.switcher" default="1" label="PLG_SYSTEM_OPENBACKAPPAUTH_AUTO_CREATE_LABEL" filter="integer">
+                    <option value="0">JNO</option>
+                    <option value="1">JYES</option>
+                </field>
+                <field name="require_verified_email" type="radio" layout="joomla.form.field.radio.switcher" default="1" label="PLG_SYSTEM_OPENBACKAPPAUTH_REQUIRE_VERIFIED_LABEL" filter="integer">
+                    <option value="0">JNO</option>
+                    <option value="1">JYES</option>
+                </field>
+                <field name="link_by_email" type="radio" layout="joomla.form.field.radio.switcher" default="0" label="PLG_SYSTEM_OPENBACKAPPAUTH_LINK_BY_EMAIL_LABEL" description="PLG_SYSTEM_OPENBACKAPPAUTH_LINK_BY_EMAIL_DESC" filter="integer">
+                    <option value="0">JNO</option>
+                    <option value="1">JYES</option>
+                </field>
+                <field name="group_map" type="subform" multiple="true" layout="joomla.form.field.subform.repeatable-table" label="PLG_SYSTEM_OPENBACKAPPAUTH_GROUP_MAP_LABEL" description="PLG_SYSTEM_OPENBACKAPPAUTH_GROUP_MAP_DESC">
+                    <form>
+                        <field name="role" type="text" label="PLG_SYSTEM_OPENBACKAPPAUTH_GROUP_MAP_ROLE" filter="string" />
+                        <field name="group" type="usergrouplist" label="PLG_SYSTEM_OPENBACKAPPAUTH_GROUP_MAP_GROUP" filter="integer" />
+                    </form>
+                </field>
+                <field name="default_group" type="usergrouplist" label="PLG_SYSTEM_OPENBACKAPPAUTH_DEFAULT_GROUP_LABEL" description="PLG_SYSTEM_OPENBACKAPPAUTH_DEFAULT_GROUP_DESC" filter="integer">
+                    <option value="0">PLG_SYSTEM_OPENBACKAPPAUTH_DEFAULT_GROUP_SITE</option>
+                </field>
+                <field name="sync_groups" type="radio" layout="joomla.form.field.radio.switcher" default="0" label="PLG_SYSTEM_OPENBACKAPPAUTH_SYNC_GROUPS_LABEL" description="PLG_SYSTEM_OPENBACKAPPAUTH_SYNC_GROUPS_DESC" filter="integer">
+                    <option value="0">JNO</option>
+                    <option value="1">JYES</option>
+                </field>
+            </fieldset>
+            <fieldset name="logout" label="PLG_SYSTEM_OPENBACKAPPAUTH_FIELDSET_LOGOUT" addfieldprefix="GexyLab\Plugin\System\OpenBackAppAuth\Field">
+                <field name="single_logout" type="radio" layout="joomla.form.field.radio.switcher" default="1" label="PLG_SYSTEM_OPENBACKAPPAUTH_SINGLE_LOGOUT_LABEL" description="PLG_SYSTEM_OPENBACKAPPAUTH_SINGLE_LOGOUT_DESC" filter="integer">
+                    <option value="0">JNO</option>
+                    <option value="1">JYES</option>
+                </field>
+                <field name="post_logout_redirect" type="url" label="PLG_SYSTEM_OPENBACKAPPAUTH_POST_LOGOUT_LABEL" description="PLG_SYSTEM_OPENBACKAPPAUTH_POST_LOGOUT_DESC" filter="url" validate="url" scheme="https,http" />
+                <field name="post_logout_default" type="redirecturi" kind="root" label="PLG_SYSTEM_OPENBACKAPPAUTH_POST_LOGOUT_DEFAULT_LABEL" />
+            </fieldset>
+        </fields>
+    </config>
+</extension>

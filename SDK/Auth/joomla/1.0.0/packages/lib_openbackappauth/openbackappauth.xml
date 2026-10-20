@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<extension type="library" method="upgrade">
+    <name>lib_openbackappauth</name>
+    <libraryname>openbackappauth</libraryname>
+    <author>GexyLab</author>
+    <creationDate>2026-10</creationDate>
+    <copyright>(C) 2026 GexyLab and the OpenBack contributors</copyright>
+    <license>GPL-2.0-or-later; the bundled openback-app-auth-php is MIT (LICENSE-SDK.txt)</license>
+    <authorUrl>https://github.com/GexyLab/openback-plugins-community</authorUrl>
+    <version>1.0.0</version>
+    <description>LIB_OPENBACKAPPAUTH_XML_DESCRIPTION</description>
+    <namespace path="src">OpenBackAppAuthJoomla</namespace>
+    <files>
+        <folder>src</folder>
+        <filename>LICENSE-SDK.txt</filename>
+    </files>
+    <languages folder="language">
+        <language tag="en-GB">en-GB/lib_openbackappauth.sys.ini</language>
+        <language tag="it-IT">it-IT/lib_openbackappauth.sys.ini</language>
+    </languages>
+</extension>
