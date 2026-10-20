@@ -1,0 +1,36 @@
+{
+  "name": "openback-app-auth-nodejs",
+  "version": "1.0.0",
+  "description": "OpenBack App authenticator for Node.js: verify user-pool tokens (ES256/JWKS), Express/Fastify guards, OpenID Connect for web apps, and the pool's client.",
+  "keywords": ["openback", "auth", "oidc", "authentication", "jwt", "jwks", "express", "fastify"],
+  "author": "GexyLab",
+  "license": "MIT",
+  "homepage": "https://github.com/GexyLab/openback-plugins-community/tree/production/SDK/Auth/nodejs/1.0.0#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/GexyLab/openback-plugins-community.git",
+    "directory": "SDK/Auth/nodejs/1.0.0"
+  },
+  "bugs": "https://github.com/GexyLab/openback-plugins-community/issues",
+  "type": "module",
+  "main": "./src/index.js",
+  "types": "./src/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./src/index.d.ts",
+      "import": "./src/index.js",
+      "default": "./src/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": ["src", "README.md", "CHANGELOG.md", "LICENSE"],
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "jose": "^6.1.0"
+  },
+  "scripts": {
+    "test": "node --test"
+  }
+}
