@@ -1,0 +1,17 @@
+# Gradle / Android
+.gradle/
+build/
+**/build/
+!gradle/wrapper/gradle-wrapper.jar
+.kotlin/
+.cxx/
+local.properties
+captures/
+*.apk
+*.aar
+*.ap_
+
+# IDEs
+.idea/
+*.iml
+.vscode/

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  res/xml/backup_rules.xml (Android 11 and lower: android:fullBackupContent="@xml/backup_rules")
+  The session is encrypted with a Keystore key that never leaves the device: a restored copy could not be decrypted
+  anyway. Keep it out of backups. For Android 12+ use the same exclusion in data_extraction_rules.xml
+  (<cloud-backup> and <device-transfer>), android:dataExtractionRules="@xml/data_extraction_rules".
+-->
+<full-backup-content>
+    <exclude domain="sharedpref" path="openback_app_auth.xml" />
+</full-backup-content>

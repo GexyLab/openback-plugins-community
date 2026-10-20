@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  The app sets the redirect scheme in its build.gradle(.kts):
+      defaultConfig { manifestPlaceholders["openbackAppAuthRedirectScheme"] = "com.example.app" }
+  and registers e.g. com.example.app:/oauth2redirect as a redirect URI of a "native" app in the pool.
+-->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <uses-permission android:name="android.permission.INTERNET" />
+
+    <!-- Android 11+ package visibility: find a browser / a Custom Tabs provider. -->
+    <queries>
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <category android:name="android.intent.category.BROWSABLE" />
+            <data android:scheme="https" />
+        </intent>
+        <intent>
+            <action android:name="android.support.customtabs.action.CustomTabsService" />
+        </intent>
+    </queries>
+
+    <application>
+        <activity
+            android:name="io.openback.appauth.android.AuthorizationManagementActivity"
+            android:exported="false"
+            android:launchMode="singleTask"
+            android:theme="@style/Theme.OpenBackAppAuth.Translucent" />
+
+        <activity
+            android:name="io.openback.appauth.android.RedirectReceiverActivity"
+            android:exported="true"
+            android:theme="@style/Theme.OpenBackAppAuth.Translucent">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="${openbackAppAuthRedirectScheme}" />
+            </intent-filter>
+        </activity>
+    </application>
+</manifest>
