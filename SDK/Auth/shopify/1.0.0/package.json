@@ -1,0 +1,53 @@
+{
+  "name": "openback-app-auth-shopify",
+  "version": "1.0.0",
+  "description": "Use an OpenBack user pool (App authenticator) as the third-party identity provider of a Shopify Plus store's new customer accounts: pool checks, SSO links, CLI.",
+  "type": "module",
+  "main": "./src/index.js",
+  "types": "./src/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./src/index.d.ts",
+      "default": "./src/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "bin": {
+    "openback-app-auth-shopify": "bin/openback-app-auth-shopify.mjs"
+  },
+  "files": [
+    "src/",
+    "bin/",
+    "README.md",
+    "CHANGELOG.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "test": "node --test test/sso.test.js test/check.test.js test/cli.test.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "sideEffects": false,
+  "keywords": [
+    "openback",
+    "auth",
+    "oidc",
+    "authentication",
+    "shopify",
+    "shopify-plus",
+    "customer-accounts",
+    "sso"
+  ],
+  "author": "GexyLab",
+  "license": "MIT",
+  "homepage": "https://github.com/GexyLab/openback-plugins-community/tree/production/SDK/Auth/shopify/1.0.0#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/GexyLab/openback-plugins-community.git",
+    "directory": "SDK/Auth/shopify/1.0.0"
+  },
+  "bugs": {
+    "url": "https://github.com/GexyLab/openback-plugins-community/issues"
+  }
+}
