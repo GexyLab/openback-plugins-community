@@ -1,7 +1,7 @@
 # Contributing a plugin
 
 1. Fork the repository and add your plugin in its folder: `plugins/integrations/<slug>/`,
-   `plugins/serverless-function-libraries/<slug>/` or `plugins/templates/<slug>/`. The folder's name is the plugin's slug (the one in its manifest).
+   `plugins/serverless-function-libraries/<slug>/`, `plugins/templates/<slug>/` or `plugins/apps/<slug>/`. The folder's name is the plugin's slug (the one in its manifest).
 2. Write its documentation inside it: `doc/README.md` (what it does, how to configure it), plus one page per block
    (`doc/blocks/<name>.md`) for an integration or a library. It is shipped with the plugin and shown in OpenBack.
 3. Add `plugin.json`:
@@ -33,6 +33,12 @@
 - **Template**: `template.json` (`schema_version` 1, `slug`, `version`, `level`, `category`, `product`, `name`,
   `description`, `steps`, `integrations`, `libraries`, `group_path`, and `build`: the new function's fields in Italian
   and English). The easiest start is an existing template of the official repository.
+- **App** (a ready-made project or app): a project or an app exported from OpenBack (Ambiti > Export) WITHOUT secret
+  values, storage files, passphrase or people / groups, unzipped into the folder, with `"slug"` and `"version"` added to
+  its `bundle.json`; database data only as sample data (`"seed": true` on each database of `meta.databases`, at most
+  10 MB). `plugin.json` adds `name`, `description`, `category` (a key of `categories.json` `"app"`) and `icon` for its
+  card; its `requires.plugins`, when given, must be the bundle's `requirements.plugins`. The official repository's
+  `tools/app_build/build.py` does all of this from the exported `.obapp`.
 
 ## Publishing (maintainers)
 

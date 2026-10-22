@@ -1,5 +1,6 @@
 """Builds an OpenBack plugin repository (openback-plugins-official, openback-plugins-community): checks every plugin (the
-folders plugins/integrations/, plugins/serverless-function-libraries/, plugins/templates/ and plugins/mcp-servers/), packs the archive of each version not yet published into dist/, and writes the catalog OpenBack reads,
+folders plugins/integrations/, plugins/serverless-function-libraries/, plugins/templates/, plugins/mcp-servers/ and
+plugins/apps/), packs the archive of each version not yet published into dist/, and writes the catalog OpenBack reads,
 index.json, signed with the repository's key (index.json.sig).
 
 SHARED FILE: the master copy is tools/plugins/repo_build.py of the OpenBack repository; each plugin repository carries
@@ -12,14 +13,18 @@ Layout of a repository:
 
     repository.json                      {"channel": "official"|"community", "publisher": "<signing key id>",
                                           "license": "<SPDX id>", "name": "..."}
-    categories.json                      {"integration"|"library"|"template"|"mcp-server": {"<key>": {"it": ..., "en": ...}}}
+    categories.json                      {"integration"|"library"|"template"|"mcp-server"|"app": {"<key>": {"it": ..., "en": ...}}}
     plugins/integrations/<slug>/         an integration package (SDK): manifest.json, integration.py, doc/, ...
     plugins/serverless-function-libraries/<slug>/  a serverless function (LogicBlock) library: manifest.json, library.py (or "provided_by": "engine"), doc/
     plugins/templates/<slug>/            a function template: template.json, doc/
     plugins/mcp-servers/<slug>/          an MCP server (mcp-service): manifest.json ("native": tools on an integration's
-                                         operations and on functions from templates; "proxy": a remote MCP server), doc/
-    plugins/<integrations|serverless-function-libraries|templates>/<slug>/plugin.json   optional, the catalog's extra data: {"license", "pricing",
+                                         operations, on functions from templates and on OpenBack's own administration
+                                         (platform tools); "proxy": a remote MCP server; optional guide), doc/
+    plugins/apps/<slug>/                 a ready-made project or app (scope bundle, imported by OpenBack's bundle importer):
+                                         an unpacked .obapp -- bundle.json (its manifest), sections/, data/ -- plus doc/
+    plugins/<type folder>/<slug>/plugin.json   optional, the catalog's extra data: {"license", "pricing",
                                          "tags", "author", "homepage", "requires": {"plugins": [{"type", "slug"}]}}
+                                         (an app: also "name", "description", "category", "icon" for its card)
     dist/<type>/<slug>/<slug>-<version>.<ext>   the published archives (never changed once published)
     index.json, index.json.sig           the catalog and its signature
 
@@ -31,6 +36,15 @@ build_manifest.py (the scripts that write its manifest and docs), any tests/ fol
 into an archive, and adding, changing or removing them never alters a published version: a version published while one
 of them was still packed (before this rule) is compared without it. Line endings are not content either: text files
 are kept LF (the repository's .gitattributes), and a version once packed from a CRLF working copy still matches.
+
+An app (plugins/apps/<slug>/) is a scope bundle as OpenBack exports it (format "openback-bundle"), unzipped, with "slug"
+and "version" added to its bundle.json (tools/app_build/ of the official repository does it from an exported .obapp).
+A catalog app carries no secret values, no storage files, no encryption, no people or groups to map, and database data
+only as SEED (each database of meta.databases with data marked "seed": true, at most 10 MB of database files); its
+requires.plugins are the bundle's requirements.plugins (derived when plugin.json has none, else they must match). Its
+archive (.obapp) is the bundle itself: bundle.json at the root, every file of the folder but plugin.json and the
+authoring-only files of its root -- dot files and folders like dist/ or build/ inside sections/ and data/ are the
+bundle's content (a site's source) and are packed.
 
 Only the standard library and `cryptography` (Ed25519).
 """
@@ -51,6 +65,7 @@ TYPES = {  # type -> (folder, manifest file, archive extension)
     "library": ("serverless-function-libraries", "manifest.json", ".oblib"),
     "template": ("templates", "template.json", ".obtpl"),
     "mcp-server": ("mcp-servers", "manifest.json", ".obmcp"),
+    "app": ("apps", "bundle.json", ".obapp"),
 }
 INDEX_SCHEMA = 1
 SLUG = {
@@ -58,22 +73,36 @@ SLUG = {
     "library": re.compile(r"^[a-z][a-z0-9_-]{1,30}(\.[a-z0-9][a-z0-9_-]{0,30})?$"),
     "template": re.compile(r"^[a-z0-9]+(-[a-z0-9]+)*$"),
     "mcp-server": re.compile(r"^[a-z][a-z0-9-]{1,39}$"),
+    "app": re.compile(r"^[a-z][a-z0-9-]{1,39}$"),
 }
 SEMVER = re.compile(r"^(\d{1,4})\.(\d{1,4})\.(\d{1,6})$")
 PRICING = ("free", "paid")
 SKIP_DIRS = {"__pycache__", ".git", ".venv", "venv", ".pytest_cache", ".mypy_cache", "tests", "dist", "build"}
 AUTHORING_FILES = {"build.py", "build_docs.py", "build_manifest.py"}  # in the plugin's root folder only
 SKIP_FILES = {"plugin.json"} | AUTHORING_FILES
-SKIP_SUFFIXES = (".pyc", ".pyo", ".obint", ".oblib", ".obtpl", ".obmcp")
+SKIP_SUFFIXES = (".pyc", ".pyo", ".obint", ".oblib", ".obtpl", ".obmcp", ".obapp")
 # Text files: the repository keeps them LF (.gitattributes); a published archive packed from a CRLF working copy is
 # still the same version (see same_content).
 TEXT_SUFFIXES = (".md", ".py", ".json", ".txt", ".yml", ".yaml", ".toml", ".cfg", ".ini", ".csv", ".html", ".js", ".css", ".sql", ".svg")
 MAX_ARCHIVE_BYTES = {"integration": 12 * 1024 * 1024, "library": 4 * 1024 * 1024, "template": 4 * 1024 * 1024,
-                     "mcp-server": 1024 * 1024}
+                     "mcp-server": 1024 * 1024,
+                     "app": 16 * 1024 * 1024}  # the integration-service downloads at most 16 MB (plugin_sources.py)
+# An app (scope bundle, OpenBack's backend bundles/format.py): what a catalog bundle may hold.
+APP_FORMAT = "openback-bundle"
+APP_FORMAT_VERSION = 1
+APP_KINDS = ("project", "app")
+APP_MAX_SEED_BYTES = 10 * 1024 * 1024  # every file under data/databases/ when the bundle carries seed data
+APP_ENTRY_NAME = re.compile(r"^[A-Za-z0-9._@+=,~\- ()\[\]/]+$")  # as the importer checks them (format.check_name)
+APP_PLUGIN_TYPES = ("integration", "library", "template", "mcp-server")  # what a plugin may require (never an app)
 # An MCP server plugin (mcp-service): its tools and what they run. "native": operations / query templates of one
-# integration and functions made from templates; "proxy": a remote MCP server reached through the "mcp" integration.
+# integration, functions made from templates and platform tools (OpenBack's own administration API, by area: no
+# integration needed); "proxy": a remote MCP server reached through the "mcp" integration. A guide (rules on how to use
+# the tools, read by the clients through one tool) may come with it.
 MCP_TOOL_NAME = re.compile(r"^[A-Za-z0-9_.-]{1,64}$")
-MCP_TOOL_KINDS = ("operation", "function")  # query templates are the project's own: not in plugins
+MCP_TOOL_KINDS = ("operation", "function", "platform")  # query templates are the project's own: not in plugins
+MCP_PLATFORM_OP = re.compile(r"^[a-z][a-z0-9_]{1,63}$")  # OpenBack's own administration (mcp-service platform_tools.py)
+MCP_TOPIC = re.compile(r"^[a-z0-9][a-z0-9_-]{0,39}$")
+MCP_MAX_RULES = 100
 MCP_APPROVALS = ("none", "client", "portal")
 MCP_REMOTE_AUTH = ("oauth", "bearer", "header", "none")
 SIGNATURE = "SIGNATURE.json"
@@ -112,13 +141,19 @@ def write_json(path: str, data):
 
 # ---------------------------------------------------------------- archives
 
-def plugin_files(folder: str) -> dict:
-    """{relative path: bytes} of what goes in the archive (plugin.json and build leftovers excluded)."""
+def plugin_files(folder: str, ptype: str = "") -> dict:
+    """{relative path: bytes} of what goes in the archive (plugin.json and build leftovers excluded). An app's folders
+    below its root are the bundle's own content (a site's source may have dot files, dist/, build/, tests/): only .git
+    folders are left out there."""
     out = {}
     for current, dirs, files in os.walk(folder):
-        dirs[:] = sorted(d for d in dirs if d not in SKIP_DIRS and not d.startswith("."))
+        content = ptype == "app" and current != folder
+        if content:
+            dirs[:] = sorted(d for d in dirs if d != ".git")
+        else:
+            dirs[:] = sorted(d for d in dirs if d not in SKIP_DIRS and not d.startswith("."))
         for name in sorted(files):
-            if name in SKIP_FILES and current == folder or name.startswith(".") or name.endswith(SKIP_SUFFIXES):
+            if not content and (name in SKIP_FILES and current == folder or name.startswith(".") or name.endswith(SKIP_SUFFIXES)):
                 continue
             full = os.path.join(current, name)
             if os.path.islink(full):
@@ -146,9 +181,12 @@ def zip_bytes(files: dict) -> bytes:
     return buffer.getvalue()
 
 
-def authoring_only(path: str) -> bool:
-    """True for a path (inside a plugin, '/'-separated) that is never part of the plugin: see the module's docstring."""
+def authoring_only(path: str, ptype: str = "") -> bool:
+    """True for a path (inside a plugin, '/'-separated) that is never part of the plugin: see the module's docstring.
+    An app: only its root's authoring files (everything below is the bundle's content)."""
     parts = path.split("/")
+    if ptype == "app":
+        return len(parts) == 1 and parts[0] in AUTHORING_FILES
     return ((len(parts) == 1 and parts[0] in AUTHORING_FILES) or "tests" in parts[:-1] or "__pycache__" in parts[:-1]
             or path.endswith((".pyc", ".pyo")))
 
@@ -157,14 +195,14 @@ def _lf(name: str, data: bytes) -> bytes:
     return data.replace(b"\r\n", b"\n") if name.lower().endswith(TEXT_SUFFIXES) else data
 
 
-def same_content(published: bytes, files: dict) -> bool:
+def same_content(published: bytes, files: dict, ptype: str = "") -> bool:
     """Whether a published archive holds these files, leaving out its authoring-only files (packed by older builds) and
     a library's SIGNATURE.json (it only signs the rest), and reading text files whatever their line endings (older
     builds packed some from CRLF working copies)."""
     try:
         with zipfile.ZipFile(io.BytesIO(published)) as archive:
             old = {n: _lf(n, archive.read(n)) for n in archive.namelist()
-                   if not n.endswith("/") and n != SIGNATURE and not authoring_only(n)}
+                   if not n.endswith("/") and n != SIGNATURE and not authoring_only(n, ptype)}
     except (zipfile.BadZipFile, OSError):
         return False
     return old == {n: _lf(n, c) for n, c in files.items() if n != SIGNATURE}
@@ -209,7 +247,8 @@ def _requires(plugin: dict, errors: list) -> dict:
     req = plugin.get("requires") or {}
     deps = []
     for dep in req.get("plugins") or []:
-        if not isinstance(dep, dict) or dep.get("type") not in TYPES or not SLUG[dep["type"]].match(str(dep.get("slug") or "")):
+        if (not isinstance(dep, dict) or dep.get("type") not in APP_PLUGIN_TYPES
+                or not SLUG[dep["type"]].match(str(dep.get("slug") or ""))):
             errors.append(f"requires.plugins: invalid entry {dep!r}")
             continue
         deps.append({"type": dep["type"], "slug": dep["slug"]})
@@ -292,7 +331,7 @@ def entry_mcp_server(slug: str, m: dict, errors: list) -> dict:
     integration = (m.get("integration") or {}).get("package") if isinstance(m.get("integration"), dict) else None
     remote = m.get("remote") if isinstance(m.get("remote"), dict) else None
     if mode == "native":
-        if not integration and any(t.get("kind") != "function" for t in tools if isinstance(t, dict)):
+        if not integration and any((t.get("kind") or "operation") == "operation" for t in tools if isinstance(t, dict)):
             errors.append("manifest.json: integration.package is required for operation tools")
         if not tools:
             errors.append("manifest.json: a native server lists its tools")
@@ -332,12 +371,16 @@ def entry_mcp_server(slug: str, m: dict, errors: list) -> dict:
             schema = t.get("input_schema")
             if schema is not None and (not isinstance(schema, dict) or schema.get("type", "object") != "object"):
                 errors.append(f"{at}: input_schema must be a JSON Schema of type object")
+        if kind == "platform" and not MCP_PLATFORM_OP.match(str(t.get("platform_op") or "")):
+            errors.append(f"{at}: platform_op (a platform tool of OpenBack's mcp-service, e.g. functions_read) is required")
         if (t.get("approval") or "none") not in MCP_APPROVALS:
             errors.append(f"{at}: approval must be one of {MCP_APPROVALS}")
         if not isinstance(t.get("fixed_params") or {}, dict):
             errors.append(f"{at}: fixed_params must be an object")
-        if not text(t.get("description"))["en"]:
+        # A platform tool may leave its description to OpenBack (the platform tool's own, always current).
+        if not text(t.get("description"))["en"] and kind != "platform":
             errors.append(f"{at}: description (English first: models read it) is required")
+    rules = _mcp_guide(m.get("guide"), keys, errors)
     return {"name": text(m.get("name"), slug), "description": text(m.get("description")), "category": str(m.get("category") or "other").lower(),
             "icon": m.get("icon") or "server", "author": m.get("author") or "", "homepage": m.get("homepage") or "",
             "keywords": {"it": [t.get("name", "") for t in tools if isinstance(t, dict)] + [text(m.get("vendor"))["it"]],
@@ -346,7 +389,152 @@ def entry_mcp_server(slug: str, m: dict, errors: list) -> dict:
                         "functions": len([t for t in tools if isinstance(t, dict) and t.get("kind") == "function"]),
                         "templates": sorted(set(templates)), "vendor": text(m.get("vendor")),
                         "remote_url": (remote or {}).get("url") or "", "remote_auth": list((remote or {}).get("auth") or []),
-                        "read_only": len([t for t in tools if isinstance(t, dict) and t.get("read_only")])}}
+                        "read_only": len([t for t in tools if isinstance(t, dict) and t.get("read_only")]),
+                        "platform": len([t for t in tools if isinstance(t, dict) and t.get("kind") == "platform"]),
+                        "guide_rules": rules}}
+
+
+def _mcp_guide(g, tool_keys: set, errors: list) -> int:
+    """The server's guide (mcp-service guide.py): {"tool_name", "enabled", "rules": [{key, topic, title, text, required,
+    enabled, tools: [tool keys]}]}. -> the number of rules."""
+    if g is None:
+        return 0
+    if not isinstance(g, dict):
+        errors.append("manifest.json: guide must be an object")
+        return 0
+    if g.get("tool_name") is not None and not MCP_TOOL_NAME.match(str(g["tool_name"])):
+        errors.append("guide.tool_name: an MCP tool name")
+    rules = g.get("rules") or []
+    if not isinstance(rules, list) or len(rules) > MCP_MAX_RULES:
+        errors.append(f"guide.rules: a list of at most {MCP_MAX_RULES}")
+        return 0
+    keys = set()
+    for i, r in enumerate(rules):
+        at = f"guide.rules[{i}]"
+        if not isinstance(r, dict):
+            errors.append(f"{at}: must be an object")
+            continue
+        if not MCP_TOPIC.match(str(r.get("key") or "")) or r.get("key") in keys:
+            errors.append(f"{at}: invalid or duplicate key")
+        keys.add(r.get("key"))
+        if not MCP_TOPIC.match(str(r.get("topic") or "")):
+            errors.append(f"{at}: topic must be lower-case letters, digits, - and _ (at most 40)")
+        title, body = text(r.get("title"))["en"], text(r.get("text"))["en"]
+        if not title or not body:
+            errors.append(f"{at}: title and text (English: models read them) are required")
+        if len(title) > 120 or len(body) > 4000:
+            errors.append(f"{at}: title (120 characters) or text (4000) too long")
+        unknown = [k for k in r.get("tools") or [] if k not in tool_keys]
+        if unknown:
+            errors.append(f"{at}: tools not in the server: {', '.join(map(str, unknown[:5]))}")
+    return len(rules)
+
+
+def _listed(value) -> list:
+    """A bundle requirement group as a list (the exporter may key it by ref)."""
+    if isinstance(value, dict):
+        return [v for v in value.values() if isinstance(v, dict)]
+    return [v for v in value or [] if isinstance(v, dict)] if isinstance(value, list) else []
+
+
+def _db_has_data(db: dict) -> bool:
+    return any(db.get(k) for k in ("data", "has_data", "data_files", "rows"))
+
+
+def entry_app(slug: str, m: dict, plugin: dict, files: dict, errors: list) -> dict:
+    """A scope bundle offered in the catalog: what OpenBack's importer reads (backend bundles/format.py), minus what a
+    published bundle must never carry -- secret values, storage files, encryption, people / groups to map -- and with
+    database data only as seed."""
+    if m.get("format") != APP_FORMAT:
+        errors.append(f'bundle.json: format must be "{APP_FORMAT}"')
+    if m.get("format_version") != APP_FORMAT_VERSION:
+        errors.append(f"bundle.json: format_version must be {APP_FORMAT_VERSION}")
+    kind = m.get("kind")
+    if kind not in APP_KINDS:
+        errors.append(f"bundle.json: kind must be one of {APP_KINDS}")
+    if m.get("encryption") is not None:
+        errors.append("bundle.json: a catalog bundle is not encrypted (encryption must be null: export it without a passphrase)")
+    contains = m.get("contains") if isinstance(m.get("contains"), dict) else {}
+    if contains.get("secret_values"):
+        errors.append("bundle.json: a catalog bundle carries no secret values (contains.secret_values)")
+    if contains.get("storage_data"):
+        errors.append("bundle.json: a catalog bundle carries no storage files (contains.storage_data)")
+    requirements = m.get("requirements") if isinstance(m.get("requirements"), dict) else {}
+    if _listed(requirements.get("principals")):
+        errors.append("bundle.json: a catalog bundle names no people or groups (requirements.principals)")
+    meta = m.get("meta") if isinstance(m.get("meta"), dict) else {}
+    databases = _listed(meta.get("databases"))
+    seed_bytes = sum(len(c) for p, c in files.items() if p.startswith("data/databases/"))
+    if contains.get("database_data"):
+        # The databases holding data (all of them when none says): each one must be seed.
+        with_data = [d for d in databases if _db_has_data(d)] or databases
+        unseeded = [str(d.get("name") or d.get("ref") or i) for i, d in enumerate(with_data) if d.get("seed") is not True]
+        if unseeded:
+            errors.append(f"bundle.json: database data only as seed (meta.databases[].seed: true): {', '.join(unseeded[:10])}")
+        if seed_bytes > APP_MAX_SEED_BYTES:
+            errors.append(f"data/databases/: {seed_bytes} bytes of seed data (max {APP_MAX_SEED_BYTES})")
+    # The files, as the importer reads them.
+    for path in files:
+        parts = path.split("/")
+        if len(path) > 512 or not APP_ENTRY_NAME.match(path) or any(p in ("", ".", "..") for p in parts):
+            errors.append(f"{path[:80]!r}: a file name the importer refuses")
+        elif path.endswith(".enc"):
+            errors.append(f"{path}: encrypted files are not allowed in a catalog bundle")
+        elif path.startswith("data/storage/"):
+            errors.append(f"{path}: storage files are not allowed in a catalog bundle")
+        elif path.startswith("data/databases/") and not contains.get("database_data") and not contains.get("database_schema"):
+            errors.append(f"{path}: database files, but bundle.json declares neither a schema nor data")
+    sections = m.get("sections") if isinstance(m.get("sections"), dict) else {}
+    counts = {}
+    for key, value in sorted(sections.items()):
+        if f"sections/{key}.json" not in files:
+            errors.append(f"bundle.json: section {key} has no sections/{key}.json")
+        items = value.get("items") if isinstance(value, dict) else value
+        counts[key] = items if isinstance(items, int) and not isinstance(items, bool) and items >= 0 else 0
+    services = sorted({str(s.get("slug")) for s in _listed(requirements.get("services")) if s.get("slug")})
+    plugins = []
+    for p in _listed(requirements.get("plugins")):
+        if p.get("type") not in APP_PLUGIN_TYPES or not SLUG[p["type"]].match(str(p.get("slug") or "")):
+            errors.append(f"bundle.json: requirements.plugins: invalid entry {p!r}")
+            continue
+        plugins.append({"type": p["type"], "slug": p["slug"], "version": str(p.get("version") or ""),
+                        "name": str(p.get("name") or p["slug"])})
+    plugins.sort(key=lambda p: (p["type"], p["slug"]))
+    installations = sorted(({"package_slug": str(i.get("package_slug") or ""), "name": str(i.get("name") or ""),
+                             "version": str(i.get("version") or ""), "database": bool(i.get("database"))}
+                            for i in _listed(requirements.get("installations"))), key=lambda i: (i["package_slug"], i["name"]))
+    external = sorted(({"entity_type": str(e.get("entity_type") or ""), "name": str(e.get("name") or "")}
+                       for e in _listed(requirements.get("external"))), key=lambda e: (e["entity_type"], e["name"]))
+    words = list(counts) + [p["slug"] for p in plugins] + services
+    return {"name": text(plugin.get("name") or m.get("name"), slug), "description": text(plugin.get("description") or m.get("description")),
+            "category": str(plugin.get("category") or m.get("category") or "other").lower(),
+            "icon": plugin.get("icon") or m.get("icon") or "boxes", "author": "", "homepage": "",
+            "keywords": {"it": words, "en": words},
+            "details": {"kind": kind, "format_version": m.get("format_version"), "sections": counts,
+                        "items": sum(counts.values()),
+                        "requirements": {"services": services, "plugins": plugins, "installations": installations,
+                                         "service_accounts": len(_listed(requirements.get("service_accounts"))),
+                                         "external": external},
+                        "contains": {"database_schema": bool(contains.get("database_schema")),
+                                     "seed_data": bool(contains.get("database_data"))},
+                        "databases": len(databases), "seed_bytes": seed_bytes if contains.get("database_data") else 0}}
+
+
+def app_requires(plugin: dict, entry: dict, errors: list) -> dict:
+    """An app's requires.plugins: its bundle's requirements.plugins. plugin.json may list them (then they must be the
+    same plugins); without them they are derived."""
+    derived = [{"type": p["type"], "slug": p["slug"]} for p in ((entry.get("details") or {}).get("requirements") or {}).get("plugins") or []]
+    if (plugin.get("requires") or {}).get("plugins") is None:
+        return {"plugins": derived}
+    listed = _requires(plugin, errors)["plugins"]
+    want, have = {(d["type"], d["slug"]) for d in derived}, {(d["type"], d["slug"]) for d in listed}
+    if want - have:
+        errors.append("plugin.json: requires.plugins lacks what bundle.json requires: "
+                      + ", ".join(f"{t} {s}" for t, s in sorted(want - have)))
+    if have - want:
+        errors.append("plugin.json: requires.plugins lists what bundle.json does not require: "
+                      + ", ".join(f"{t} {s}" for t, s in sorted(have - want)))
+    return {"plugins": derived}
 
 
 def collect(repo: dict, key, check_only: bool) -> tuple:
@@ -365,7 +553,7 @@ def collect(repo: dict, key, check_only: bool) -> tuple:
             try:
                 manifest = read_json(os.path.join(pdir, manifest_name))
                 plugin = read_json(os.path.join(pdir, "plugin.json")) if os.path.isfile(os.path.join(pdir, "plugin.json")) else {}
-                files = plugin_files(pdir)
+                files = plugin_files(pdir, ptype)
             except (OSError, ValueError, BuildError) as exc:
                 problems.append(f"{ptype} {slug}: {exc}")
                 continue
@@ -383,9 +571,11 @@ def collect(repo: dict, key, check_only: bool) -> tuple:
                 entry = entry_library(slug, manifest, files, publisher, errors)
             elif ptype == "mcp-server":
                 entry = entry_mcp_server(slug, manifest, errors)
+            elif ptype == "app":
+                entry = entry_app(slug, manifest, plugin, files, errors)
             else:
                 entry = entry_template(slug, manifest, errors)
-            requires = _requires(plugin, errors)
+            requires = app_requires(plugin, entry, errors) if ptype == "app" else _requires(plugin, errors)
             if errors:
                 problems.extend(f"{ptype} {slug}: {e}" for e in errors)
                 continue
@@ -399,7 +589,7 @@ def collect(repo: dict, key, check_only: bool) -> tuple:
                     with open(target, "rb") as f:
                         published = f.read()
                     # The published archive is never rewritten: same files (authoring-only ones aside) = same version.
-                    if published != data and not same_content(published, files):
+                    if published != data and not same_content(published, files, ptype):
                         problems.append(f"{ptype} {slug}: version {version} is already published with different content: "
                                         "raise the version")
                         continue

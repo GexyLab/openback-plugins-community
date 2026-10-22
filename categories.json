@@ -1,4 +1,46 @@
 {
+ "app": {
+  "ai": {
+   "en": "Artificial intelligence",
+   "it": "Intelligenza artificiale"
+  },
+  "api": {
+   "en": "APIs and backends",
+   "it": "API e backend"
+  },
+  "automation": {
+   "en": "Automation",
+   "it": "Automazione"
+  },
+  "crm": {
+   "en": "CRM",
+   "it": "CRM"
+  },
+  "ecommerce": {
+   "en": "E-commerce",
+   "it": "E-commerce"
+  },
+  "internal-tools": {
+   "en": "Internal tools",
+   "it": "Strumenti interni"
+  },
+  "iot": {
+   "en": "IoT",
+   "it": "IoT"
+  },
+  "other": {
+   "en": "Other",
+   "it": "Altro"
+  },
+  "starter": {
+   "en": "Starter projects",
+   "it": "Progetti di partenza"
+  },
+  "website": {
+   "en": "Websites",
+   "it": "Siti web"
+  }
+ },
  "integration": {
   "ai": {
    "en": "Artificial intelligence",
